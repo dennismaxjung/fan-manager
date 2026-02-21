@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/SolutionFolder/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Dockerfile" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src\FanManager.Core\FanManager.Core.csproj" />
+    <Project Path="src\FanManager.Infrastructure\FanManager.Infrastructure.csproj" />
+    <Project Path="src\FanManager\FanManager.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\FanManager.Tests\FanManager.Tests.csproj" />
+  </Folder>
+</Solution>

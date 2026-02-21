@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FanManager.Core\FanManager.Core.csproj" />
+    <ProjectReference Include="..\..\src\FanManager.Infrastructure\FanManager.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

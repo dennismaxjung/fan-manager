@@ -1,0 +1,66 @@
+# .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.userprefs
+
+# Rider
+.idea/
+*.DotSettings.user
+
+# Visual Studio Code
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# OS
+.DS_Store
+Thumbs.db
+*~
+
+# Logs
+*.log
+logs/
+
+# User-specific files
+*.user
+*.suo
+*.cache
+*.docstates
+
+# Docker
+.dockerignore
+
+# Sim
+.devcontainer/scripts/sim/logs/*
+!.devcontainer/scripts/sim/logs/.gitkeep
+.devcontainer/scripts/sim/state/ipmitool_last_fan_speed_hex.txt

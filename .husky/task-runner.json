@@ -1,0 +1,57 @@
+{
+   "variables" : [
+      {
+         "name" : "git-branch-name",
+         "command" : "git",
+         "args" : [
+            "branch",
+            "--show-current"
+         ]
+      }
+   ],
+   "tasks" : [
+      {
+         "name" : "validation-commit-message",
+         "group" : "commit-msg",
+         "command" : "dotnet",
+         "args" : [
+            "husky",
+            "exec",
+            ".husky/csx-scripts/validation-commit-message.csx",
+            "--args",
+            "${args}"
+         ]
+      },
+      {
+         "name" : "validation-branch-name",
+         "group" : "pre-commit",
+         "command" : "dotnet",
+         "args" : [
+            "husky",
+            "exec",
+            ".husky/csx-scripts/validation-branch-name.csx",
+            "--args",
+            "${git-branch-name}"
+         ]
+      },
+      {
+         "name" : "dotnet-format",
+         "group" : "pre-commit",
+         "command" : "dotnet",
+         "args" : [
+            "format",
+            "--include",
+            "${staged}"
+         ],
+         "include" : [
+            "**/*.cs",
+            "**/*.json",
+            "**/*.csproj",
+            "**/*.sln",
+            "**/*.slnx"
+         ],
+         "exclude" : [
+         ]
+      }
+   ]
+}

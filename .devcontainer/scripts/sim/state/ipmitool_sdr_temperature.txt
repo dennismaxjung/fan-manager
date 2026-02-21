@@ -1,0 +1,4 @@
+Inlet Temp       | 04h | ok  |  7.1 | 19 degrees C
+Exhaust Temp     | 01h | ok  |  7.1 | 29 degrees C
+Temp             | 0Eh | ok  |  3.1 | 34 degrees C
+Temp             | 0Fh | ok  |  3.2 | 32 degrees C
