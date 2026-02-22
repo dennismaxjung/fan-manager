@@ -28,14 +28,14 @@ Configuration via environment variables with prefix `FANMANAGER__`:
 | Variable                                                                  | Default    | Description                               |
 |---------------------------------------------------------------------------|------------|-------------------------------------------|
 | `FANMANAGER__IPMI__HOST`                                                  | `local`    | iDRAC host ('local' or IP address)        |
-| `FANMANAGER__IPMI__USERNAME`                                        | `root`     | iDRAC username                            |
-| `FANMANAGER__IPMI__PASSWORD`                                        | `calvin`   | iDRAC password                            |
-| `FANMANAGER__BASE_FAN_SPEED`                                        | `20`       | Base fan speed (%)                        |
-| `FANMANAGER__CPU_TEMPERATURE_THRESHOLD`                             | `60`       | CPU threshold (°C)                        |
-| `FANMANAGER__GPU_TEMPERATURE_THRESHOLD`                             | `45`       | GPU threshold (°C)                        |
-| `FANMANAGER__GPU_TEMPERATURE_MAX`                                   | -          | Optional: Maximum GPU temperature (°C)    |
-| `FANMANAGER__CHECK_INTERVAL`                                        | `00:00:30` | Check interval (TimeSpan format)          |
-| `FANMANAGER__ENABLE_DELL_THIRD_PARTY_PCIE_CARD_COOLING_BEHAVIOR`    | `false`    | Enable Dell third-party PCIe card cooling |
+| `FANMANAGER__IPMI__USERNAME`                                              | `root`     | iDRAC username                            |
+| `FANMANAGER__IPMI__PASSWORD`                                              | `calvin`   | iDRAC password                            |
+| `FANMANAGER__BASE_FAN_SPEED`                                              | `20`       | Base fan speed (%)                        |
+| `FANMANAGER__CPU_TEMPERATURE_THRESHOLD`                                   | `60`       | CPU threshold (°C)                        |
+| `FANMANAGER__GPU_TEMPERATURE_THRESHOLD`                                   | `45`       | GPU threshold (°C)                        |
+| `FANMANAGER__GPU_TEMPERATURE_MAX`                                         | -          | Optional: Maximum GPU temperature (°C)    |
+| `FANMANAGER__CHECK_INTERVAL`                                              | `00:00:30` | Check interval (TimeSpan format)          |
+| `FANMANAGER__ENABLE_DELL_THIRD_PARTY_PCIE_CARD_COOLING_BEHAVIOR`          | `false`    | Enable Dell third-party PCIe card cooling |
 | `FANMANAGER__RESTORE_DELL_THIRD_PARTY_PCIE_CARD_COOLING_BEHAVIOR_ON_EXIT` | `true`     | Restore Dell cooling behavior on exit     |
 
 ## Development
@@ -119,7 +119,22 @@ Container includes health check monitoring the worker process every 60 seconds.
 - ✅ **Structured Logging** - Microsoft.Extensions.Logging
 - ✅ **Options Pattern** - Type-safe configuration with validation
 
---- 
+---
+
+## Roadmap
+
+- **Web API** – A REST API to expose sensor values and stats for integration with dashboards like [Homepage](https://gethomepage.dev/) or [Home Assistant](https://www.home-assistant.io/)
+- **Manual Override via Web API** – Ability to manually override fan settings through the API
+- **GPU Selection** – Option to select specific NVIDIA GPUs to include/exclude (e.g. to exclude actively cooled GPUs)
+- **Extended Hardware Metrics** – Additional server and GPU statistics via `nvidia-smi`, including GPU utilization and VRAM usage
+- **Custom Fan Curve** – Support for defining a custom fan curve to fine-tune fan behavior based on temperature thresholds
+- **Additional Device Support** – Support for other devices beyond GPUs that are cooled by the server fans (e.g. PCIe cards, storage, etc.)
+- **Inlet & Exhaust Temperature** – Include inlet and exhaust air temperatures in the fan control logic for more accurate thermal management
+- **Controller & Provider Architecture** – Architectural extension introducing a central controller and provider model, allowing resources running in other VMs or remote systems to report their metrics to the central controller
+- **External Webhooks** – Ability to trigger external webhooks on temperature thresholds (e.g. to activate an air conditioning unit or send alerts)
+- **Centralized Log Forwarding** – Support for forwarding logs to a central logging service (e.g. Loki, Graylog, or similar)
+
+---
 
 ## Contributing
 
@@ -198,7 +213,8 @@ This project is an independent open-source utility.
 
 - **iDRAC** and **PowerEdge** are registered trademarks of **Dell Inc**.
 - **NVIDIA** is a registered trademark of **NVIDIA Corporation**.
-  This software is not affiliated with, sponsored by, or endorsed by Dell Inc. or NVIDIA Corporation. Use it at your own
+
+This software is not affiliated with, sponsored by, or endorsed by Dell Inc. or NVIDIA Corporation. Use it at your own
   risk.
 
 ---
