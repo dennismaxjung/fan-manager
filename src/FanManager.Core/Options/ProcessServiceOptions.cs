@@ -11,5 +11,5 @@ public sealed record ProcessServiceOptions
     public string IpmiToolPath { get; init; } = "/usr/bin/ipmitool";
 
     [ConfigurationKeyName("NVIDIA_SMI_PATH")]
-    public string NvidiaSmiPath { get; init; } = "/usr/bin/nvidia-smi";
+    public string NvidiaSmiPath { get; init; } = "/usr/local/bin/nvidia-smi";
 }

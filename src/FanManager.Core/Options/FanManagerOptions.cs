@@ -21,7 +21,7 @@ public sealed record FanManagerOptions
     public decimal? GpuTemperatureMax { get; init; }
 
     [ConfigurationKeyName("CHECK_INTERVAL")]
-    public TimeSpan CheckInterval { get; init; } = TimeSpan.FromSeconds(30);
+    public TimeSpan CheckInterval { get; init; } = TimeSpan.FromSeconds(10);
 
     [ConfigurationKeyName("ENABLE_DELL_THIRD_PARTY_PCIE_CARD_COOLING_BEHAVIOR")]
     public bool EnableDellThirdPartyPcieCardCoolingBehavior { get; init; } = false;
