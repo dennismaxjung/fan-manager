@@ -23,7 +23,7 @@ WORKDIR /src/src/FanManager
 RUN dotnet publish FanManager.csproj -c Release -o /app/publish --no-restore
 
 # Runtime stage - based on nvidia/cuda for nvidia-smi support
-FROM nvidia/cuda:12.3.1-base-ubuntu22.04 AS runtime
+FROM nvidia/cuda:12.9.2-base-ubuntu22.04 AS runtime
 
 # Nvidia environment variables
 ENV NVIDIA_VISIBLE_DEVICES=all
