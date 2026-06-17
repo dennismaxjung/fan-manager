@@ -60,7 +60,7 @@ public sealed class NvidiaSmiService : INvidiaSmiService
         {
             var parts = line.Split(',');
             if (parts.Length >= 4 &&
-                Guid.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var id)
+                Guid.TryParse(parts[0].Trim().Replace("GPU-", ""), CultureInfo.InvariantCulture, out var id)
                )
             {
                 gpus.Add(new GpuInfo(
@@ -97,7 +97,7 @@ public sealed class NvidiaSmiService : INvidiaSmiService
             var parts = line.Split(',');
 
             if (parts.Length >= 2 &&
-                Guid.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var id) &&
+                Guid.TryParse(parts[0].Trim().Replace("GPU-", ""), CultureInfo.InvariantCulture, out var id) &&
                 decimal.TryParse(parts[1].Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var temp))
             {
                 temperatures.Add(id, TemperatureReading.Now(temp));

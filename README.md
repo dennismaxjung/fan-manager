@@ -126,7 +126,7 @@ Container includes health check monitoring the worker process every 60 seconds.
 
 - [ ] **Web API** – A REST API to expose sensor values and stats for integration with dashboards like [Homepage](https://gethomepage.dev/) or [Home Assistant](https://www.home-assistant.io/)
 - [ ] **Manual Override via Web API** – Ability to manually override fan settings through the API
-- [ ] **GPU Selection** – 
+- [ ] **GPU Selection**
   - [ ] Option to select specific NVIDIA GPUs to include/exclude
   - [x] Option to ignore actively cooled GPUs for highest temperature detection
 - [ ] **Extended Hardware Metrics** – Additional server and GPU statistics via `nvidia-smi`, including GPU utilization and VRAM usage

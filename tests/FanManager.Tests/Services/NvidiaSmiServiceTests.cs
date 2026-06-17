@@ -122,8 +122,8 @@ public sealed class NvidiaSmiServiceTests
                 "--query-gpu=uuid,name,driver_version,fan.speed --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync($"""
-                         {TestConstants.FirstGuid}, Tesla T10, 580.126.16, [N/A]
-                         {TestConstants.SecondGuid}, Tesla T10, 580.126.16, 20
+                         GPU-{TestConstants.FirstGuid}, Tesla T10, 580.126.16, [N/A]
+                         GPU-{TestConstants.SecondGuid}, Tesla T10, 580.126.16, 20
                          """);
 
         var sut = CreateSut();
@@ -161,8 +161,8 @@ public sealed class NvidiaSmiServiceTests
                 "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync($"""
-                         {TestConstants.FirstGuid}, 38
-                         {TestConstants.SecondGuid}, 45
+                         GPU-{TestConstants.FirstGuid}, 38
+                         GPU-{TestConstants.SecondGuid}, 45
                          """);
 
         var sut = CreateSut();
@@ -192,9 +192,9 @@ public sealed class NvidiaSmiServiceTests
                 "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync($"""
-                          {TestConstants.FirstGuid}, 45
-                          {TestConstants.ThirdGuid}, not-a-number
-                          {TestConstants.SecondGuid}, 67
+                          GPU-{TestConstants.FirstGuid}, 45
+                          GPU-{TestConstants.ThirdGuid}, not-a-number
+                          GPU-{TestConstants.SecondGuid}, 67
                           """);
 
         var sut = CreateSut();
@@ -228,9 +228,9 @@ public sealed class NvidiaSmiServiceTests
                 "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync($"""
-                         {TestConstants.FirstGuid}, 55
-                         {TestConstants.SecondGuid}, 72
-                         {TestConstants.ThirdGuid}, 61
+                         GPU-{TestConstants.FirstGuid}, 55
+                         GPU-{TestConstants.SecondGuid}, 72
+                         GPU-{TestConstants.ThirdGuid}, 61
                          """);
 
         var sut = CreateSut();
