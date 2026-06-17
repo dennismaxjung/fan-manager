@@ -36,7 +36,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk"/>
     <PackageReference Include="Moq"/>
     <PackageReference Include="AwesomeAssertions"/>
-    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit.v3"/>
     <PackageReference Include="xunit.runner.visualstudio"/>
     <Using Include="Xunit"/>
     <Using Include="AwesomeAssertions"/>
