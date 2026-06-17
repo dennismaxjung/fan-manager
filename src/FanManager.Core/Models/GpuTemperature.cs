@@ -6,8 +6,8 @@
 public sealed record GpuTemperature(
     TemperatureReading Reading,
     decimal Threshold,
-    decimal? Max,
-    GpuInfo? Info = null)
+    GpuInfo Info,
+    decimal? Max)
 {
     public bool IsAboveThreshold => Reading.Celsius >= Threshold;
     public decimal DifferenceFromThreshold => Reading.Celsius - Threshold;

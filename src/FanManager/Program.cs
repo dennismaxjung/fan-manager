@@ -33,6 +33,7 @@ builder.Services.AddSingleton<FanControlStrategy>();
 builder.Services.AddSingleton<IIpmiService, IpmiService>();
 builder.Services.AddSingleton<INvidiaSmiService, NvidiaSmiService>();
 builder.Services.AddSingleton<IProcessService, ProcessService>();
+builder.Services.AddSingleton<IDataStore, DataStore>();
 
 // Register Worker
 builder.Services.AddHostedService<FanManagerWorker>();

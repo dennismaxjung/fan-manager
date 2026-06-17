@@ -1,4 +1,5 @@
-﻿using FanManager.Core.Interfaces;
+﻿using FanManager.Core.Extensions;
+using FanManager.Core.Interfaces;
 using FanManager.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 
@@ -94,7 +95,7 @@ public sealed class NvidiaSmiServiceTests
 
         _process.Verify(p => p.ExecuteCommandAsync(
                 IProcessService.Command.NvidiaSmi,
-                "--query-gpu=index,name,driver_version --format=csv,noheader",
+                "--query-gpu=uuid,,name,driver_version,fan.speed --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()),
             Times.Never);
     }
@@ -118,11 +119,11 @@ public sealed class NvidiaSmiServiceTests
         _process
             .Setup(p => p.ExecuteCommandAsync(
                 IProcessService.Command.NvidiaSmi,
-                "--query-gpu=index,name,driver_version --format=csv,noheader",
+                "--query-gpu=uuid,name,driver_version,fan.speed --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync("""
-                         0, Tesla T10, 580.126.16
-                         1, Tesla T10, 580.126.16
+            .ReturnsAsync($"""
+                         {TestConstants.FirstGuid}, Tesla T10, 580.126.16, [N/A]
+                         {TestConstants.SecondGuid}, Tesla T10, 580.126.16, 20
                          """);
 
         var sut = CreateSut();
@@ -132,10 +133,10 @@ public sealed class NvidiaSmiServiceTests
 
         // Assert
         gpus.Should().HaveCount(2);
-        gpus[0].Index.Should().Be(0);
+        gpus[0].Id.Should().Be(TestConstants.FirstGuid);
         gpus[0].Name.Should().Be("Tesla T10");
         gpus[0].DriverVersion.Should().Be("580.126.16");
-        gpus[1].Index.Should().Be(1);
+        gpus[1].Id.Should().Be(TestConstants.SecondGuid);
     }
 
     [Fact]
@@ -157,11 +158,11 @@ public sealed class NvidiaSmiServiceTests
         _process
             .Setup(p => p.ExecuteCommandAsync(
                 IProcessService.Command.NvidiaSmi,
-                "--query-gpu=temperature.gpu --format=csv,noheader,nounits",
+                "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync("""
-                         38
-                         45
+            .ReturnsAsync($"""
+                         {TestConstants.FirstGuid}, 38
+                         {TestConstants.SecondGuid}, 45
                          """);
 
         var sut = CreateSut();
@@ -171,7 +172,7 @@ public sealed class NvidiaSmiServiceTests
 
         // Assert
         temps.Should().HaveCount(2);
-        temps.Select(t => t.Celsius).Should().BeEquivalentTo(new[] { 38m, 45m }, o => o.WithStrictOrdering());
+        temps.Select(t => t.Value.Celsius).Should().BeEquivalentTo([38m, 45m], o => o.WithStrictOrdering());
     }
 
     [Fact]
@@ -188,12 +189,12 @@ public sealed class NvidiaSmiServiceTests
         _process
             .Setup(p => p.ExecuteCommandAsync(
                 IProcessService.Command.NvidiaSmi,
-                "--query-gpu=temperature.gpu --format=csv,noheader,nounits",
+                "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync("""
-                          45
-                          not-a-number
-                          67
+            .ReturnsAsync($"""
+                          {TestConstants.FirstGuid}, 45
+                          {TestConstants.ThirdGuid}, not-a-number
+                          {TestConstants.SecondGuid}, 67
                           """);
 
         var sut = CreateSut();
@@ -202,44 +203,11 @@ public sealed class NvidiaSmiServiceTests
         var temps = await sut.GetAllGpuTemperaturesAsync();
 
         // Assert
-        temps.Select(t => t.Celsius).Should().BeEquivalentTo(new[] { 45m, 67m }, o => o.WithStrictOrdering());
+        temps.Select(t => t.Value.Celsius).Should().BeEquivalentTo([45m, 67m], o => o.WithStrictOrdering());
     }
 
     [Fact]
-    public Task GetHighestGpuTemperatureAsync_WhenNoTemps_ThrowsAsync()
-    {
-        // Arrange
-        _process
-            .Setup(p => p.ExecuteCommandAsync(
-                IProcessService.Command.NvidiaSmi,
-                "--version",
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync("""
-                          NVIDIA-SMI version  : 580.126.16
-                          NVML version        : 580.126
-                          DRIVER version      : 580.126.16
-                          CUDA Version        : 13.0
-                          """);
-
-        _process
-            .Setup(p => p.ExecuteCommandAsync(
-                IProcessService.Command.NvidiaSmi,
-                "--query-gpu=temperature.gpu --format=csv,noheader,nounits",
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync("\n\n");
-
-        var sut = CreateSut();
-
-        // Act
-        var act = () => sut.GetHighestGpuTemperatureAsync();
-
-        // Assert
-        return act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("No GPU temperatures available");
-    }
-
-    [Fact]
-    public async Task GetHighestGpuTemperatureAsync_ReturnsMaxTemperatureAsync()
+    public async Task GetHighestGpuTemperature_ReturnsMaxTemperatureAsync()
     {
         // Arrange
         _process
@@ -257,20 +225,20 @@ public sealed class NvidiaSmiServiceTests
         _process
             .Setup(p => p.ExecuteCommandAsync(
                 IProcessService.Command.NvidiaSmi,
-                "--query-gpu=temperature.gpu --format=csv,noheader,nounits",
+                "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync("""
-                         55
-                         72
-                         61
+            .ReturnsAsync($"""
+                         {TestConstants.FirstGuid}, 55
+                         {TestConstants.SecondGuid}, 72
+                         {TestConstants.ThirdGuid}, 61
                          """);
 
         var sut = CreateSut();
 
         // Act
-        var highest = await sut.GetHighestGpuTemperatureAsync();
+        var highest = (await sut.GetAllGpuTemperaturesAsync()).GetHighestTemperature();
 
         // Assert
-        highest.Celsius.Should().Be(72m);
+        highest.Value.Celsius.Should().Be(72m);
     }
 }

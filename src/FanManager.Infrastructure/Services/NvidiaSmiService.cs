@@ -28,7 +28,8 @@ public sealed class NvidiaSmiService : INvidiaSmiService
 
         try
         {
-            await _processService.ExecuteCommandAsync(IProcessService.Command.NvidiaSmi, "--version", cancellationToken);
+            await _processService.ExecuteCommandAsync(IProcessService.Command.NvidiaSmi, "--version",
+                cancellationToken);
             _isAvailable = true;
             _logger.LogInformation("nvidia-smi is available");
             return true;
@@ -46,10 +47,10 @@ public sealed class NvidiaSmiService : INvidiaSmiService
         if (!await IsAvailableAsync(cancellationToken))
             return Array.Empty<GpuInfo>();
 
-        // Query: index,name,driver_version
+        // Query: uuid,name,driver_version,fan.speed
         var output = await _processService.ExecuteCommandAsync(
             IProcessService.Command.NvidiaSmi,
-            "--query-gpu=index,name,driver_version --format=csv,noheader",
+            "--query-gpu=uuid,name,driver_version,fan.speed --format=csv,noheader,nounits",
             cancellationToken);
 
         var gpus = new List<GpuInfo>();
@@ -58,13 +59,17 @@ public sealed class NvidiaSmiService : INvidiaSmiService
         foreach (var line in lines)
         {
             var parts = line.Split(',');
-            if (parts.Length >= 3 &&
-                int.TryParse(parts[0].Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var index))
+            if (parts.Length >= 4 &&
+                Guid.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var id)
+               )
             {
                 gpus.Add(new GpuInfo(
+                    id,
                     Name: parts[1].Trim(),
-                    Index: index,
-                    DriverVersion: parts[2].Trim()));
+                    DriverVersion: parts[2].Trim(),
+                    string.Equals(parts[3].Trim(), "[N/A]", StringComparison.OrdinalIgnoreCase)
+                        ? GpuCoolingType.Passive
+                        : GpuCoolingType.Active));
             }
         }
 
@@ -72,38 +77,30 @@ public sealed class NvidiaSmiService : INvidiaSmiService
         return gpus;
     }
 
-    public async Task<TemperatureReading> GetHighestGpuTemperatureAsync(CancellationToken cancellationToken = default)
-    {
-        var temperatures = await GetAllGpuTemperaturesAsync(cancellationToken);
-
-        if (temperatures.Count == 0)
-            throw new InvalidOperationException("No GPU temperatures available");
-
-        var highest = temperatures.MaxBy(t => t.Celsius);
-        _logger.LogDebug("Highest GPU temperature: {Temperature}°C", highest.Celsius);
-
-        return highest;
-    }
-
-    public async Task<IReadOnlyList<TemperatureReading>> GetAllGpuTemperaturesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<Guid, TemperatureReading>> GetAllGpuTemperaturesAsync(
+        CancellationToken cancellationToken = default)
     {
         if (!await IsAvailableAsync(cancellationToken))
-            return Array.Empty<TemperatureReading>();
+            return new Dictionary<Guid, TemperatureReading>();
 
-        // Query: temperature.gpu (returns temperatures only)
+        // Query: uuid,temperature.gpu (returns temperatures only)
         var output = await _processService.ExecuteCommandAsync(
             IProcessService.Command.NvidiaSmi,
-            "--query-gpu=temperature.gpu --format=csv,noheader,nounits",
+            "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits",
             cancellationToken);
 
-        var temperatures = new List<TemperatureReading>();
+        var temperatures = new Dictionary<Guid, TemperatureReading>();
         var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var line in lines)
         {
-            if (decimal.TryParse(line.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var temp))
+            var parts = line.Split(',');
+
+            if (parts.Length >= 2 &&
+                Guid.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var id) &&
+                decimal.TryParse(parts[1].Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var temp))
             {
-                temperatures.Add(TemperatureReading.Now(temp));
+                temperatures.Add(id, TemperatureReading.Now(temp));
             }
         }
 

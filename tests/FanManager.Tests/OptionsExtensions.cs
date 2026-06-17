@@ -12,6 +12,7 @@ public static class OptionsExtensions
             new(
                 Cpu: new CpuTemperature(TemperatureReading.Now(cpuTemperature), options.Value.CpuTemperatureThreshold),
                 Gpu: new GpuTemperature(TemperatureReading.Now(gpuTemperature), options.Value.GpuTemperatureThreshold,
+                    new GpuInfo(TestConstants.FirstGuid, "Fake GPU", "000.000.000", GpuCoolingType.Passive),
                     options.Value.GpuTemperatureMax),
                 Timestamp: DateTimeOffset.Now);
 

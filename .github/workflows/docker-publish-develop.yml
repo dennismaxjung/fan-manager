@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ github.repository }}   # z.B. meinuser/mein-repo
+  IMAGE_NAME: ${{ github.repository }}   # e.g. myuser/my-repo
 
 jobs:
   build-and-push:
@@ -17,26 +17,26 @@ jobs:
 
     permissions:
       contents: read
-      packages: write   # Für GitHub Container Registry nötig
+      packages: write   # Required for GitHub Container Registry
 
     steps:
-      # ── 1. Code auschecken ────────────────────────────────────────────
+      # ── 1. Check out code ─────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Docker Buildx einrichten (für Multi-Platform / Cache) ──────
+      # ── 2. Set up Docker Buildx (for multi-platform / cache) ──────────
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ── 3. Bei GitHub Container Registry einloggen ────────────────────
+      # ── 3. Log in to GitHub Container Registry ────────────────────────
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}   # Automatisch vorhanden, kein Secret nötig
+          password: ${{ secrets.GITHUB_TOKEN }}   # Provided automatically, no secret needed
 
-      # ── 4. Bei Docker Hub einloggen ───────────────────────────────────
+      # ── 4. Log in to Docker Hub ───────────────────────────────────────
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ── 5. Image-Tags & Labels generieren ─────────────────────────────
+      # ── 5. Generate image tags & labels ───────────────────────────────
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -54,9 +54,9 @@ jobs:
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
           tags: |
             type=raw,value=develop
-            type=sha,prefix=develop-,format=short   # z.B. develop-a1b2c3d (optional, aber nützlich)
+            type=sha,prefix=develop-,format=short   # e.g. develop-a1b2c3d (optional but useful)
 
-      # ── 6. Image bauen & pushen ───────────────────────────────────────
+      # ── 6. Build & push image ─────────────────────────────────────────
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -64,5 +64,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha          # GitHub Actions Cache nutzen
-          cache-to: type=gha,mode=max   # Build-Cache speichern → schnellere Folge-Builds
+          cache-from: type=gha          # Use GitHub Actions cache
+          cache-to: type=gha,mode=max   # Store build cache → faster subsequent builds

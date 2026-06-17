@@ -29,7 +29,7 @@ public sealed class InterfaceMockingExamples
         // Assert
         temperature.Celsius.Should().Be(45);
         mockIpmiService.Verify(x =>
-            x.SetFanSpeedAsync(It.Is<FanSpeedPercentage>(s => s.Value == 30), It.IsAny<CancellationToken>()),
+                x.SetFanSpeedAsync(It.Is<FanSpeedPercentage>(s => s.Value == 30), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -47,23 +47,25 @@ public sealed class InterfaceMockingExamples
             .Setup(x => x.GetGpuInfoAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GpuInfo>
             {
-                new("NVIDIA Quadro P2000", 0, "535.183.01")
+                new(TestConstants.FirstGuid, "NVIDIA Quadro P2000", "535.183.01", GpuCoolingType.Active)
             });
 
         mockNvidiaService
-            .Setup(x => x.GetHighestGpuTemperatureAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TemperatureReading.Now(65));
+            .Setup(x => x.GetAllGpuTemperaturesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, TemperatureReading> { { TestConstants.FirstGuid, TemperatureReading.Now(65) } });
 
         // Act
         var isAvailable = await mockNvidiaService.Object.IsAvailableAsync();
         var gpus = await mockNvidiaService.Object.GetGpuInfoAsync();
-        var temperature = await mockNvidiaService.Object.GetHighestGpuTemperatureAsync();
+        var temperatures = await mockNvidiaService.Object.GetAllGpuTemperaturesAsync();
 
         // Assert
         isAvailable.Should().BeTrue();
         gpus.Should().HaveCount(1);
         gpus[0].Name.Should().Be("NVIDIA Quadro P2000");
-        temperature.Celsius.Should().Be(65);
+        temperatures.Count.Should().Be(1);
+        temperatures.First().Key.Should().Be(TestConstants.FirstGuid);
+        temperatures.First().Value.Celsius.Should().Be(65);
     }
 
     [Fact]
@@ -84,8 +86,8 @@ public sealed class InterfaceMockingExamples
             .ReturnsAsync(true);
 
         mockNvidia
-            .Setup(x => x.GetHighestGpuTemperatureAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(TemperatureReading.Now(75));
+            .Setup(x => x.GetAllGpuTemperaturesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, TemperatureReading> { { TestConstants.FirstGuid, TemperatureReading.Now(75) } });
 
         // Setup IPMI commands
         mockIpmi
@@ -98,19 +100,21 @@ public sealed class InterfaceMockingExamples
 
         // Act
         var cpuTemp = await mockIpmi.Object.GetCpuTemperatureAsync();
-        var gpuTemp = await mockNvidia.Object.GetHighestGpuTemperatureAsync();
+        var gpuTemps = await mockNvidia.Object.GetAllGpuTemperaturesAsync();
 
         await mockIpmi.Object.EnableManualFanControlAsync();
         await mockIpmi.Object.SetFanSpeedAsync(new FanSpeedPercentage(40));
 
         // Assert
         cpuTemp.Celsius.Should().Be(55);
-        gpuTemp.Celsius.Should().Be(75);
+        gpuTemps.Count.Should().Be(1);
+        gpuTemps.First().Key.Should().Be(TestConstants.FirstGuid);
+        gpuTemps.First().Value.Celsius.Should().Be(75);
 
         mockIpmi.Verify(x => x.EnableManualFanControlAsync(It.IsAny<CancellationToken>()), Times.Once);
         mockIpmi.Verify(x => x.SetFanSpeedAsync(
-            It.Is<FanSpeedPercentage>(s => s.Value == 40),
-            It.IsAny<CancellationToken>()),
+                It.Is<FanSpeedPercentage>(s => s.Value == 40),
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

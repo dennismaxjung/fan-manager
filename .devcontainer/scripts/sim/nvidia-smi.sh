@@ -23,7 +23,7 @@ case "$ARGS" in
     exit 0
     ;;
 
-  "--query-gpu=index,name,driver_version --format=csv,noheader")
+  "--query-gpu=uuid,name,driver_version,fan.speed --format=csv,noheader,nounits")
     STATE_FILE="${SIM_STATE_DIR}/nvidia_smi_query_gpu.csv"
     if [[ ! -f "$STATE_FILE" ]]; then
       echo "nvidia-smi simulator: missing state file: $STATE_FILE" >&2
@@ -33,7 +33,7 @@ case "$ARGS" in
     exit 0
     ;;
 
-  "--query-gpu=temperature.gpu --format=csv,noheader,nounits")
+  "--query-gpu=uuid,temperature.gpu --format=csv,noheader,nounits")
     STATE_FILE="${SIM_STATE_DIR}/nvidia_smi_temps.txt"
     if [[ ! -f "$STATE_FILE" ]]; then
       echo "nvidia-smi simulator: missing state file: $STATE_FILE" >&2

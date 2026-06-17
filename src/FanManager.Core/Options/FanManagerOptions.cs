@@ -20,6 +20,9 @@ public sealed record FanManagerOptions
     [ConfigurationKeyName("GPU_TEMPERATURE_MAX")]
     public decimal? GpuTemperatureMax { get; init; }
 
+    [ConfigurationKeyName("GPU_IGNORE_ACTIVE_COOLED")]
+    public bool GpuIgnoreActiveCooled { get; init; } = true;
+
     [ConfigurationKeyName("CHECK_INTERVAL")]
     public TimeSpan CheckInterval { get; init; } = TimeSpan.FromSeconds(10);
 

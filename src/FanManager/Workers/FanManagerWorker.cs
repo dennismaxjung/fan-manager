@@ -16,6 +16,7 @@ public sealed class FanManagerWorker : BackgroundService
     private readonly IIpmiService _ipmiService;
     private readonly INvidiaSmiService _nvidiaSmiService;
     private readonly FanControlStrategy _fanControlStrategy;
+    private readonly IDataStore _dataStore;
     private readonly FanManagerOptions _options;
     private bool _gpuAvailable;
     private bool _manualControlEnabled;
@@ -27,12 +28,14 @@ public sealed class FanManagerWorker : BackgroundService
         IIpmiService ipmiService,
         INvidiaSmiService nvidiaSmiService,
         FanControlStrategy fanControlStrategy,
+        IDataStore dataStore,
         IOptions<FanManagerOptions> options)
     {
         _logger = logger;
         _ipmiService = ipmiService;
         _nvidiaSmiService = nvidiaSmiService;
         _fanControlStrategy = fanControlStrategy;
+        _dataStore = dataStore;
         _options = options.Value;
     }
 
@@ -112,12 +115,12 @@ public sealed class FanManagerWorker : BackgroundService
         _gpuAvailable = await _nvidiaSmiService.IsAvailableAsync(cancellationToken);
         if (_gpuAvailable)
         {
-            var gpus = await _nvidiaSmiService.GetGpuInfoAsync(cancellationToken);
+            var gpus = await _dataStore.GetGpuInfosAsync(cancellationToken);
             _logger.LogInformation("✓ {Count} GPU(s) detected:", gpus.Count);
             foreach (var gpu in gpus)
             {
-                _logger.LogInformation("  GPU {Index}: {Name} (Driver: {Driver})",
-                    gpu.Index, gpu.Name, gpu.DriverVersion);
+                _logger.LogInformation("  GPU {Id}: {Name} (Driver: {Driver}, CoolingType: {CoolingType})",
+                    gpu.Id, gpu.Name, gpu.DriverVersion, gpu.CoolingType.ToString());
             }
         }
         else
@@ -143,8 +146,12 @@ public sealed class FanManagerWorker : BackgroundService
             GpuTemperature? gpuTemp = null;
             if (_gpuAvailable)
             {
-                var gpuReading = await _nvidiaSmiService.GetHighestGpuTemperatureAsync(cancellationToken);
-                gpuTemp = new GpuTemperature(gpuReading, _options.GpuTemperatureThreshold, _options.GpuTemperatureMax);
+                var gpuInfos = await _dataStore.GetGpuInfosAsync(cancellationToken);
+                var gpuReading = (await _nvidiaSmiService.GetAllGpuTemperaturesAsync(cancellationToken))
+                    .Where(temp => gpuInfos.Any(gpuInfo => gpuInfo.Id == temp.Key && gpuInfo.CoolingType == GpuCoolingType.Passive))
+                    .ToDictionary()
+                    .GetHighestTemperature();
+                gpuTemp = new GpuTemperature(gpuReading.Value, _options.GpuTemperatureThreshold, gpuInfos.First(gpu => gpu.Id == gpuReading.Key), _options.GpuTemperatureMax);
             }
 
             var status = new SystemTemperatureStatus(
@@ -186,7 +193,7 @@ public sealed class FanManagerWorker : BackgroundService
             status.Cpu.Reading.Celsius,
             status.Cpu.Threshold,
             status.Gpu is not null
-                ? $"GPU Temperature: {status.Gpu.Reading.Celsius:F1}°C (Threshold: {status.Gpu.Threshold:F1}°C{gpuMax})"
+                ? $"GPU Temperature: {status.Gpu.Reading.Celsius:F1}°C (Threshold: {status.Gpu.Threshold:F1}°C{gpuMax}) Id: {status.Gpu.Info.Id}"
                 : "GPU: Not available",
             decision.GetType().Name,
             FormatDecisionDetails(decision));

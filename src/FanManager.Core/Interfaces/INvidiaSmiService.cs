@@ -19,13 +19,7 @@ public interface INvidiaSmiService
     Task<IReadOnlyList<GpuInfo>> GetGpuInfoAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Reads temperature from all GPUs
-    /// Returns highest temperature if multiple GPUs present
-    /// </summary>
-    Task<TemperatureReading> GetHighestGpuTemperatureAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Reads temperatures from all GPUs individually
     /// </summary>
-    Task<IReadOnlyList<TemperatureReading>> GetAllGpuTemperaturesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<Guid, TemperatureReading>> GetAllGpuTemperaturesAsync(CancellationToken cancellationToken = default);
 }

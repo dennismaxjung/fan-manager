@@ -4,6 +4,7 @@
 /// GPU information and temperature
 /// </summary>
 public sealed record GpuInfo(
+    Guid Id,
     string Name,
-    int Index,
-    string DriverVersion);
+    string DriverVersion,
+    GpuCoolingType CoolingType);
